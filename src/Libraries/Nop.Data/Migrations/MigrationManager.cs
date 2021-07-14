@@ -4,18 +4,11 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using FluentMigrator;
-using FluentMigrator.Builders.Create;
-using FluentMigrator.Builders.Create.Table;
-using FluentMigrator.Builders.IfDatabase;
-using FluentMigrator.Expressions;
 using FluentMigrator.Infrastructure;
-using FluentMigrator.Model;
 using FluentMigrator.Runner;
 using FluentMigrator.Runner.Initialization;
 using Nop.Core;
 using Nop.Core.Infrastructure;
-using Nop.Data.Mapping;
-using Nop.Data.Mapping.Builders;
 
 namespace Nop.Data.Migrations
 {

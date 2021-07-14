@@ -1,7 +1,4 @@
-﻿using System;
-using System.Reflection;
-using FluentMigrator.Builders.Create;
-using FluentMigrator.Expressions;
+﻿using System.Reflection;
 
 namespace Nop.Data.Migrations
 {
