@@ -38,22 +38,21 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
     /// </summary>
     public static class ApplicationBuilderExtensions
     {
-        /// <summary>
-        /// Configure the application HTTP request pipeline
-        /// </summary>
-        /// <param name="application">Builder for configuring an application's request pipeline</param>
-        public static void ConfigureRequestPipeline(this IApplicationBuilder application)
-        {
-            EngineContext.Current.ConfigureRequestPipeline(application);
-        }
-
         public static void StartEngine(this IApplicationBuilder application)
         {
-            var engine = EngineContext.Current;
+            var engine = EngineContext.Create(application.ApplicationServices);
 
             //further actions are performed only when the database is installed
             if (DataSettingsManager.IsDatabaseInstalled())
             {
+                var migrationManager = engine.Resolve<IMigrationManager>();
+
+                //update nopCommerce core and db first
+                var assembly = Assembly.GetAssembly(typeof(IMigrationManager));
+                migrationManager.ApplyUpMigrations(assembly, MigrationProcess.Update);
+                assembly = Assembly.GetAssembly(typeof(ApplicationBuilderExtensions));
+                migrationManager.ApplyUpMigrations(assembly, MigrationProcess.Update);
+
                 //initialize and start schedule tasks
                 Services.Tasks.TaskManager.Instance.Initialize();
                 Services.Tasks.TaskManager.Instance.Start();
@@ -65,20 +64,10 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
                 var pluginService = engine.Resolve<IPluginService>();
                 pluginService.InstallPluginsAsync().Wait();
                 pluginService.UpdatePluginsAsync().Wait();
-
-                //update nopCommerce core and db
-                var migrationManager = engine.Resolve<IMigrationManager>();
-                var assembly = Assembly.GetAssembly(typeof(ApplicationBuilderExtensions));
-                migrationManager.ApplyUpMigrations(assembly, true);
-                assembly = Assembly.GetAssembly(typeof(IMigrationManager));
-                migrationManager.ApplyUpMigrations(assembly, true);
-
-#if DEBUG
-                //prevent save the update migrations into the DB during the developing process  
-                var versions = EngineContext.Current.Resolve<IRepository<MigrationVersionInfo>>();
-                versions.DeleteAsync(mvi => mvi.Description.StartsWith(string.Format(NopMigrationDefaults.UpdateMigrationDescriptionPrefix, NopVersion.FULL_VERSION)));
-#endif
             }
+
+            //Configure the application HTTP request pipeline
+            EngineContext.Current.ConfigureRequestPipeline(application);
         }
 
         /// <summary>
