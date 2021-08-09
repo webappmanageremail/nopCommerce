@@ -4,7 +4,8 @@ using Nop.Data.Mapping;
 
 namespace Nop.Data.Migrations.UpgradeTo450
 {
-    [NopMigration("2021/12/07 16:00:00:0000000", "Store soft deleting", MigrationTarget = MigrationTarget.Schema, MigrationProcessType = MigrationProcessType.Update)]
+    [NopMigration("2021/12/07 16:00:00:0000000", "Store soft deleting", MigrationTarget = MigrationTarget.Schema)]
+    [MigrationStage(MigrationProcess.Update)]
     public class StoreMigration : ForwardOnlyMigration
     {
         public override void Up()
