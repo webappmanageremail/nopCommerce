@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Nop.Core.Infrastructure;
 using Nop.Web.Framework.Infrastructure.Extensions;
 using Nop.Web.Framework.Mvc.Routing;
+using NUglify.Helpers;
 
 namespace Nop.Web.Framework.Infrastructure
 {
@@ -49,6 +51,8 @@ namespace Nop.Web.Framework.Infrastructure
                 //add constraint key for language
                 options.ConstraintMap[NopPathRouteDefaults.LanguageParameterTransformer] = typeof(LanguageParameterTransformer);
             });
+
+            
         }
 
         /// <summary>
@@ -59,9 +63,6 @@ namespace Nop.Web.Framework.Infrastructure
         {
             //use response compression
             application.UseNopResponseCompression();
-
-            //use static files feature
-            application.UseNopStaticFiles();
 
             //check whether requested page is keep alive page
             application.UseKeepAlive();

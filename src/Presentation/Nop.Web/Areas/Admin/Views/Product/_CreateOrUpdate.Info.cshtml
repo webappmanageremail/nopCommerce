@@ -8,195 +8,195 @@
 
 @{
     var stores = await storeService.GetAllStoresAsync();
-
-    //resources for product tags input
-    Html.AppendCssFileParts("~/lib_npm/jquery-tageditor/jquery.tag-editor.css");
-    Html.AppendScriptParts("~/lib_npm/jquery-tageditor/jquery.tag-editor.min.js");
-    Html.AppendScriptParts("~/lib_npm/jquery-tageditor/jquery.caret.min.js");
 }
+    @* resources for product tags input *@
+    <link rel="stylesheet" href="~/lib_npm/jquery-tageditor/jquery.caret.min.js">
+    <link rel="stylesheet" href="~/lib_npm/jquery-tageditor/jquery.tag-editor.min.js">
+    <link rel="stylesheet" href="~/lib_npm/jquery-tageditor/jquery.tag-editor.css">
+
 
     <script>
-    $(document).ready(function() {
-        @if (!Model.IsLoggedInAsVendor)
-        {
-            <text>$("#@Html.IdFor(model => model.ShowOnHomepage)").click(toggleShowOnHomepage);</text>
-        }
-        $("#@Html.IdFor(model => model.ProductTypeId)").change(toggleProductType);
-        $("#@Html.IdFor(model => model.RequireOtherProducts)").click(toggleRequireOtherProducts);
-        $("#@Html.IdFor(model => model.MarkAsNew)").click(toggleMarkAsNew);
-
-        @if (!Model.IsLoggedInAsVendor)
-        {
-            <text>toggleShowOnHomepage();</text>
-        }
-        toggleProductType();
-        toggleRequireOtherProducts();
-        toggleMarkAsNew();
-    });
-
-    function toggleShowOnHomepage() {
-        if ($('#@Html.IdFor(model => model.ShowOnHomepage)').is(':checked')) {
-            $('#pnlDisplayOrder').showElement();
-        } else {
-            $('#pnlDisplayOrder').hideElement();
-        }
-    }
-
-    function toggleProductType() {
-        var simpleProductId = "@((int)ProductType.SimpleProduct)";
-        var groupedProductId = "@((int)ProductType.GroupedProduct)";
-
-
-        var selectedProductTypeId = $("#@Html.IdFor(model => model.ProductTypeId)").val();
-        if (!selectedProductTypeId || selectedProductTypeId == simpleProductId) {
-            $('#group-required-other-products').showElement();
-            $('#group-visible-individually').showElement();
-            $('#group-associated-products').hideElement();
-
-            $('[data-card-name=product-price]').showElement();
-            $('[data-card-name=product-shipping]').showElement();
-            $('[data-card-name=product-inventory]').showElement();
-            $('[data-card-name=product-giftcard]').showElement();
-            $('[data-card-name=product-downloadable]').showElement();
-            $('[data-card-name=product-rental]').showElement();
-            $('[data-card-name=product-recurring]').showElement();
-        } else if (selectedProductTypeId == groupedProductId) {
-            $('#group-required-other-products').hideElement();
-            $('#group-visible-individually').hideElement();
-            $('#group-associated-products').showElement();
-            updateTableWidth('#associatedproducts-grid');
-
-            $('#@Html.IdFor(model => model.VisibleIndividually)').prop('checked', true);
-            
-
-            $('[data-card-name=product-price]').hideElement();
-            $('[data-card-name=product-shipping]').hideElement();
-            $('[data-card-name=product-inventory]').hideElement();
-            $('[data-card-name=product-giftcard]').hideElement();
-            $('[data-card-name=product-downloadable]').hideElement();
-            $('[data-card-name=product-rental]').hideElement();
-            $('[data-card-name=product-recurring]').hideElement();
-        }
-
-        //templates
-        var productTypeSupportedValues = {};
-        @foreach (var kvp in Model.ProductsTypesSupportedByProductTemplates)
-        {
-            <text>productTypeSupportedValues['@(kvp.Key)'] = {};</text>
-            foreach (var item in kvp.Value)
+        $(document).ready(function() {
+            @if (!Model.IsLoggedInAsVendor)
             {
-                <text>productTypeSupportedValues['@(kvp.Key)']['@(item.Value)'] = '@Html.Raw(JavaScriptEncoder.Default.Encode((item.Text)))';</text>
+                <text>$("#@Html.IdFor(model => model.ShowOnHomepage)").click(toggleShowOnHomepage);</text>
             }
-        }
-        var productTemplateDropddown = $("#@Html.IdFor(model => model.ProductTemplateId)");
-        var productTemplateSelectedValue = productTemplateDropddown.val();
-        productTemplateDropddown.empty();
-        for (var name in productTypeSupportedValues[selectedProductTypeId]) {
-            productTemplateDropddown.append($("<option></option>").attr("value", name).text(productTypeSupportedValues[selectedProductTypeId][name]));
-        }
-        //previously selected value
-        $('#@Html.IdFor(model => model.ProductTemplateId) option').each(function(){
-            if (this.value == productTemplateSelectedValue) {
-                productTemplateDropddown.val(productTemplateSelectedValue);
+            $("#@Html.IdFor(model => model.ProductTypeId)").change(toggleProductType);
+            $("#@Html.IdFor(model => model.RequireOtherProducts)").click(toggleRequireOtherProducts);
+            $("#@Html.IdFor(model => model.MarkAsNew)").click(toggleMarkAsNew);
+
+            @if (!Model.IsLoggedInAsVendor)
+            {
+                <text>toggleShowOnHomepage();</text>
             }
+            toggleProductType();
+            toggleRequireOtherProducts();
+            toggleMarkAsNew();
         });
 
-        if ($('#@Html.IdFor(model => model.ProductTemplateId) option').length > 1) {
-            $('#pnlProductTemplateId').showElement();
-        } else {
-            $('#pnlProductTemplateId').hideElement();
+        function toggleShowOnHomepage() {
+            if ($('#@Html.IdFor(model => model.ShowOnHomepage)').is(':checked')) {
+                $('#pnlDisplayOrder').showElement();
+            } else {
+                $('#pnlDisplayOrder').hideElement();
+            }
         }
-    }
 
-    function toggleRequireOtherProducts() {
-        if ($('#@Html.IdFor(model => model.RequireOtherProducts)').is(':checked')) {
-            $('#pnlRequiredProductIds').showElement();
-            $('#pnlAutomaticallyAddRequiredProducts').showElement();
-        } else {
-            $('#pnlRequiredProductIds').hideElement();
-            $('#pnlAutomaticallyAddRequiredProducts').hideElement();
-        }
-    }
+        function toggleProductType() {
+            var simpleProductId = "@((int)ProductType.SimpleProduct)";
+            var groupedProductId = "@((int)ProductType.GroupedProduct)";
 
-    function toggleMarkAsNew() {
-        if ($('#@Html.IdFor(model => model.MarkAsNew)').is(':checked')) {
-            $('#pnlMarkAsNewStartDateTimeUtc').showElement();
-            $('#pnlMarkAsNewEndDateTimeUtc').showElement();
-        } else {
-            $('#pnlMarkAsNewStartDateTimeUtc').hideElement();
-            $('#pnlMarkAsNewEndDateTimeUtc').hideElement();
-        }
-    }
 
-    //tags
-    $(document).ready(function() {
-        @Html.Raw(Model.InitialProductTags)
-        $("#@Html.IdFor(model => model.ProductTags)").tagEditor({
-            autocomplete: {
-                delay: 0,
-                position: { collision: 'flip' },
-                source: initialProductTags
-            },
-            delimiter: ',',
-            placeholder: '@T("Admin.Catalog.Products.Fields.ProductTags.Placeholder")'
-        });
-    });
+            var selectedProductTypeId = $("#@Html.IdFor(model => model.ProductTypeId)").val();
+            if (!selectedProductTypeId || selectedProductTypeId == simpleProductId) {
+                $('#group-required-other-products').showElement();
+                $('#group-visible-individually').showElement();
+                $('#group-associated-products').hideElement();
 
-    //required product friendly names
-    $(document).ready(function() {
-        loadRequiredProductFriendlyNames();
-    });
+                $('[data-card-name=product-price]').showElement();
+                $('[data-card-name=product-shipping]').showElement();
+                $('[data-card-name=product-inventory]').showElement();
+                $('[data-card-name=product-giftcard]').showElement();
+                $('[data-card-name=product-downloadable]').showElement();
+                $('[data-card-name=product-rental]').showElement();
+                $('[data-card-name=product-recurring]').showElement();
+            } else if (selectedProductTypeId == groupedProductId) {
+                $('#group-required-other-products').hideElement();
+                $('#group-visible-individually').hideElement();
+                $('#group-associated-products').showElement();
+                updateTableWidth('#associatedproducts-grid');
 
-    $(document).ready(function() {
-        $('#@Html.IdFor(model => model.RequiredProductIds)')
-            .data('timeout', null)
-            .keyup(function() {
-                clearTimeout($(this).data('timeout'));
-                //one second timeout
-                $(this).data('timeout', setTimeout(loadRequiredProductFriendlyNames, 1000));
-            });
-    });
+                $('#@Html.IdFor(model => model.VisibleIndividually)').prop('checked', true);
+                
 
-    function loadRequiredProductFriendlyNames() {
-        var inputValue = $('#@Html.IdFor(model => model.RequiredProductIds)').val();
-        if (inputValue) {
-            //load friendly names
-            $('#required-products-check-progress').show();
+                $('[data-card-name=product-price]').hideElement();
+                $('[data-card-name=product-shipping]').hideElement();
+                $('[data-card-name=product-inventory]').hideElement();
+                $('[data-card-name=product-giftcard]').hideElement();
+                $('[data-card-name=product-downloadable]').hideElement();
+                $('[data-card-name=product-rental]').hideElement();
+                $('[data-card-name=product-recurring]').hideElement();
+            }
 
-            var postData = {
-                productIds: inputValue
-            };
-            addAntiForgeryToken(postData);
-
-            $.ajax({
-                cache: false,
-                type: "POST",
-                url: "@Url.Action("LoadProductFriendlyNames", "Product")",
-                data: postData,
-                dataType: "json",
-                success: function (data, textStatus, jqXHR) {
-                    $('#required-product-names').text(data.Text);
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    $('#required-product-names').text('');
-                },
-                complete: function (jqXHR, textStatus) {
-                    $('#required-products-check-progress').hide();
+            //templates
+            var productTypeSupportedValues = {};
+            @foreach (var kvp in Model.ProductsTypesSupportedByProductTemplates)
+            {
+                <text>productTypeSupportedValues['@(kvp.Key)'] = {};</text>
+                foreach (var item in kvp.Value)
+                {
+                    <text>productTypeSupportedValues['@(kvp.Key)']['@(item.Value)'] = '@Html.Raw(JavaScriptEncoder.Default.Encode((item.Text)))';</text>
+                }
+            }
+            var productTemplateDropddown = $("#@Html.IdFor(model => model.ProductTemplateId)");
+            var productTemplateSelectedValue = productTemplateDropddown.val();
+            productTemplateDropddown.empty();
+            for (var name in productTypeSupportedValues[selectedProductTypeId]) {
+                productTemplateDropddown.append($("<option></option>").attr("value", name).text(productTypeSupportedValues[selectedProductTypeId][name]));
+            }
+            //previously selected value
+            $('#@Html.IdFor(model => model.ProductTemplateId) option').each(function(){
+                if (this.value == productTemplateSelectedValue) {
+                    productTemplateDropddown.val(productTemplateSelectedValue);
                 }
             });
-        } else {
-            $('#required-product-names').text('');
-        }
-    }
 
-    $(document).ready(function () {
-        if ('@Model.Sku') {
-            warningValidation('@Url.Action("SkuReservedWarning")', '@Html.NameFor(model => model.Sku)', { productId: @Model.Id, sku: '@Model.Sku' });
+            if ($('#@Html.IdFor(model => model.ProductTemplateId) option').length > 1) {
+                $('#pnlProductTemplateId').showElement();
+            } else {
+                $('#pnlProductTemplateId').hideElement();
+            }
         }
-        $('#@Html.IdFor(model => model.Sku)').on('input change', function () {
-            warningValidation('@Url.Action("SkuReservedWarning")', '@Html.NameFor(model => model.Sku)', { productId: @Model.Id, sku: $(this).val() });
+
+        function toggleRequireOtherProducts() {
+            if ($('#@Html.IdFor(model => model.RequireOtherProducts)').is(':checked')) {
+                $('#pnlRequiredProductIds').showElement();
+                $('#pnlAutomaticallyAddRequiredProducts').showElement();
+            } else {
+                $('#pnlRequiredProductIds').hideElement();
+                $('#pnlAutomaticallyAddRequiredProducts').hideElement();
+            }
+        }
+
+        function toggleMarkAsNew() {
+            if ($('#@Html.IdFor(model => model.MarkAsNew)').is(':checked')) {
+                $('#pnlMarkAsNewStartDateTimeUtc').showElement();
+                $('#pnlMarkAsNewEndDateTimeUtc').showElement();
+            } else {
+                $('#pnlMarkAsNewStartDateTimeUtc').hideElement();
+                $('#pnlMarkAsNewEndDateTimeUtc').hideElement();
+            }
+        }
+
+        //tags
+        $(document).ready(function() {
+            @Html.Raw(Model.InitialProductTags)
+            $("#@Html.IdFor(model => model.ProductTags)").tagEditor({
+                autocomplete: {
+                    delay: 0,
+                    position: { collision: 'flip' },
+                    source: initialProductTags
+                },
+                delimiter: ',',
+                placeholder: '@T("Admin.Catalog.Products.Fields.ProductTags.Placeholder")'
+            });
         });
-    });
+
+        //required product friendly names
+        $(document).ready(function() {
+            loadRequiredProductFriendlyNames();
+        });
+
+        $(document).ready(function() {
+            $('#@Html.IdFor(model => model.RequiredProductIds)')
+                .data('timeout', null)
+                .keyup(function() {
+                    clearTimeout($(this).data('timeout'));
+                    //one second timeout
+                    $(this).data('timeout', setTimeout(loadRequiredProductFriendlyNames, 1000));
+                });
+        });
+
+        function loadRequiredProductFriendlyNames() {
+            var inputValue = $('#@Html.IdFor(model => model.RequiredProductIds)').val();
+            if (inputValue) {
+                //load friendly names
+                $('#required-products-check-progress').show();
+
+                var postData = {
+                    productIds: inputValue
+                };
+                addAntiForgeryToken(postData);
+
+                $.ajax({
+                    cache: false,
+                    type: "POST",
+                    url: "@Url.Action("LoadProductFriendlyNames", "Product")",
+                    data: postData,
+                    dataType: "json",
+                    success: function (data, textStatus, jqXHR) {
+                        $('#required-product-names').text(data.Text);
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        $('#required-product-names').text('');
+                    },
+                    complete: function (jqXHR, textStatus) {
+                        $('#required-products-check-progress').hide();
+                    }
+                });
+            } else {
+                $('#required-product-names').text('');
+            }
+        }
+
+        $(document).ready(function () {
+            if ('@Model.Sku') {
+                warningValidation('@Url.Action("SkuReservedWarning")', '@Html.NameFor(model => model.Sku)', { productId: @Model.Id, sku: '@Model.Sku' });
+            }
+            $('#@Html.IdFor(model => model.Sku)').on('input change', function () {
+                warningValidation('@Url.Action("SkuReservedWarning")', '@Html.NameFor(model => model.Sku)', { productId: @Model.Id, sku: $(this).val() });
+            });
+        });
     </script>
 
 
