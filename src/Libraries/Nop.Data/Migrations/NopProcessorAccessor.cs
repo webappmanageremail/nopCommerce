@@ -4,6 +4,7 @@ using System.Linq;
 using FluentMigrator;
 using FluentMigrator.Exceptions;
 using FluentMigrator.Runner.Processors;
+using Nop.Core.Configuration;
 
 namespace Nop.Data.Migrations
 {

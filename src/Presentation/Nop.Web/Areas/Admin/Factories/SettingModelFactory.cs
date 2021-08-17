@@ -785,7 +785,8 @@ namespace Nop.Web.Areas.Admin.Factories
                 AzureBlobConfigModel = _appSettings.AzureBlobConfig.ToConfigModel<AzureBlobConfigModel>(),
                 InstallationConfigModel = _appSettings.InstallationConfig.ToConfigModel<InstallationConfigModel>(),
                 PluginConfigModel = _appSettings.PluginConfig.ToConfigModel<PluginConfigModel>(),
-                CommonConfigModel = _appSettings.CommonConfig.ToConfigModel<CommonConfigModel>()
+                CommonConfigModel = _appSettings.CommonConfig.ToConfigModel<CommonConfigModel>(),
+                DataConfigModel = _appSettings.DataConfig.ToConfigModel<DataConfigModel>()
             };
 
             model.DistributedCacheConfigModel.DistributedCacheTypeValues = await _appSettings.DistributedCacheConfig.DistributedCacheType.ToSelectListAsync();

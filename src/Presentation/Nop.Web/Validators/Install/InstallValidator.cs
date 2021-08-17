@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Nop.Core.Configuration;
 using Nop.Data;
 using Nop.Web.Framework.Validators;
 using Nop.Web.Infrastructure.Installation;

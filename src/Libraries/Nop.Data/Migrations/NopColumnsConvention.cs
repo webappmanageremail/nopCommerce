@@ -1,5 +1,6 @@
-using FluentMigrator.Expressions;
+﻿using FluentMigrator.Expressions;
 using FluentMigrator.Runner.Conventions;
+using Nop.Core.Configuration;
 
 namespace Nop.Data.Migrations
 {

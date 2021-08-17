@@ -210,6 +210,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                 appSettings.InstallationConfig = model.InstallationConfigModel.ToConfig(appSettings.InstallationConfig);
                 appSettings.PluginConfig = model.PluginConfigModel.ToConfig(appSettings.PluginConfig);
                 appSettings.CommonConfig = model.CommonConfigModel.ToConfig(appSettings.CommonConfig);
+                appSettings.DataConfig = model.DataConfigModel.ToConfig(appSettings.DataConfig);
                 await AppSettingsHelper.SaveAppSettingsAsync(appSettings, _fileProvider);
 
                 await _customerActivityService.InsertActivityAsync("EditSettings",

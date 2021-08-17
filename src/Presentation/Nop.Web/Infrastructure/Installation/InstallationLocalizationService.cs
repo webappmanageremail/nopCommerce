@@ -6,6 +6,7 @@ using System.Xml;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using Nop.Core;
+using Nop.Core.Configuration;
 using Nop.Core.Http;
 using Nop.Core.Infrastructure;
 using Nop.Data;

@@ -12,6 +12,11 @@ namespace Nop.Core.Configuration
         #region Properties
 
         /// <summary>
+        /// Gets or sets data configuration parameters
+        /// </summary>
+        public DataConfig DataConfig { get; set; } = new DataConfig();
+
+        /// <summary>
         /// Gets or sets cache configuration parameters
         /// </summary>
         public CacheConfig CacheConfig { get; set; } = new CacheConfig();

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Nop.Core.Configuration;
 using Nop.Data;
 using Nop.Web.Framework.Mvc.ModelBinding;
 

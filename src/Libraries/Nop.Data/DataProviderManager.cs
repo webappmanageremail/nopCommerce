@@ -1,4 +1,5 @@
 ﻿using Nop.Core;
+using Nop.Core.Configuration;
 using Nop.Core.Infrastructure;
 using Nop.Data.DataProviders;
 
@@ -38,7 +39,7 @@ namespace Nop.Data
         {
             get
             {
-                var dataProviderType = Singleton<DataSettings>.Instance.DataProvider;
+                var dataProviderType = Singleton<DataConfig>.Instance.DataProvider;
 
                 return GetDataProvider(dataProviderType);
             }

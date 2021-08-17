@@ -57,6 +57,15 @@ namespace Nop.Web.Framework.Migrations.UpgradeTo450
 
                 //#5532
                 ["Admin.Configuration.Languages.CLDR.Warning"] = "Please make sure the appropriate CLDR package is installed for this culture. You can set CLDR for the specified culture on the <a href=\"{0}\" target=\"_blank\">General Settings page, Localization tab</a>.",
+
+                //#5511
+                ["Admin.Configuration.AppSettings.Data"] = "Data configuration",
+                ["Admin.Configuration.AppSettings.Data.ConnectionString"] = "Connection string",
+                ["Admin.Configuration.AppSettings.Data.ConnectionString.Hint"] = "Sets a connection string.",
+                ["Admin.Configuration.AppSettings.Data.DataProvider"] = "Data provider",
+                ["Admin.Configuration.AppSettings.Data.DataProvider.Hint"] = "Sets a data provider.",
+                ["Admin.Configuration.AppSettings.Data.SQLCommandTimeout"] = "SQL command timeout",
+                ["Admin.Configuration.AppSettings.Data.SQLCommandTimeout.Hint"] = "Gets or sets the wait time (in seconds) before terminating the attempt to execute a command and generating an error. By default, timeout isn't set and a default value for the current provider used. Set 0 to use infinite timeout.",
             }).Wait();
 
             // rename locales

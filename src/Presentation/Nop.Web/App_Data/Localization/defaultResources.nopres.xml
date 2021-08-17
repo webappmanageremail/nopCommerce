@@ -4452,6 +4452,27 @@
   <LocaleResource Name="Admin.Configuration.AppSettings.Common.UseSessionStateTempDataProvider.Hint">
     <Value>Enable this setting to store TempData in the session state. By default the cookie-based TempData provider is used to store TempData in cookies.</Value>
   </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.AppSettings.Data">
+    <Value>Data configuration</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.AppSettings.Data.ConnectionString">
+    <Value>Connection string</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.AppSettings.Data.ConnectionString.Hint">
+    <Value>Sets a connection string.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.AppSettings.Data.DataProvider">
+    <Value>Data provider</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.AppSettings.Data.DataProvider.Hint">
+    <Value>Sets a data provider.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.AppSettings.Data.SQLCommandTimeout">
+    <Value>SQL command timeout</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.AppSettings.Data.SQLCommandTimeout.Hint">
+    <Value>Gets or sets the wait time (in seconds) before terminating the attempt to execute a command and generating an error. By default, timeout isn't set and a default value for the current provider used. Set 0 to use infinite timeout.</Value>
+  </LocaleResource>
   <LocaleResource Name="Admin.Configuration.AppSettings.Description">
     <Value><![CDATA[Configuration in ASP.NET Core is performed using a configuration provider from the external appsettings.json configuration file. These settings are used when the application is launched, so after editing them, the application will be restarted. You can find a detailed description of all configuration parameters in <a href="{0}" target="_blank">our documentation.</a>]]></Value>
   </LocaleResource>
