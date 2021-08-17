@@ -205,6 +205,9 @@ namespace Nop.Web.Areas.Admin.Infrastructure.Mapper
 
             CreateMap<CommonConfig, CommonConfigModel>();
             CreateMap<CommonConfigModel, CommonConfig>();
+
+            CreateMap<DataConfig, DataConfigModel>();
+            CreateMap<DataConfigModel, DataConfig>();
         }
 
         /// <summary>
