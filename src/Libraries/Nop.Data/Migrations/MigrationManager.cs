@@ -1,21 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Reflection;
 using FluentMigrator;
-using FluentMigrator.Builders.Create;
-using FluentMigrator.Builders.Create.Table;
-using FluentMigrator.Builders.IfDatabase;
-using FluentMigrator.Expressions;
 using FluentMigrator.Infrastructure;
-using FluentMigrator.Model;
 using FluentMigrator.Runner;
 using FluentMigrator.Runner.Initialization;
-using Nop.Core;
-using Nop.Core.Infrastructure;
-using Nop.Data.Mapping;
-using Nop.Data.Mapping.Builders;
 
 namespace Nop.Data.Migrations
 {
@@ -38,9 +28,10 @@ namespace Nop.Data.Migrations
         public MigrationManager(
             IFilteringMigrationSource filteringMigrationSource,
             IMigrationRunner migrationRunner,
-            IMigrationRunnerConventions migrationRunnerConventions)
+            IMigrationRunnerConventions migrationRunnerConventions,
+            Lazy<IVersionLoader> versionLoader)
         {
-            _versionLoader = new Lazy<IVersionLoader>(() => EngineContext.Current.Resolve<IVersionLoader>());
+            _versionLoader = versionLoader;
 
             _filteringMigrationSource = filteringMigrationSource;
             _migrationRunner = migrationRunner;
@@ -89,7 +80,7 @@ namespace Nop.Data.Migrations
             }
 
             foreach (var migrationInfo in migrations.Where(needToExecute))
-                    _migrationRunner.MigrateUp(migrationInfo.Version);
+                _migrationRunner.MigrateUp(migrationInfo.Version);
         }
 
         /// <summary>

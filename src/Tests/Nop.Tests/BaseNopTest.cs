@@ -360,6 +360,7 @@ namespace Nop.Tests
             }
 
             services.AddSingleton<IInstallationService, InstallationService>();
+            services.AddTransient(p => new Lazy<IVersionLoader>(p.GetRequiredService<IVersionLoader>()));
 
             services
                 // add common FluentMigrator services
