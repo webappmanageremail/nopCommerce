@@ -70,6 +70,7 @@ namespace Nop.Core.Infrastructure
 
             //register type finder
             services.AddSingleton<ITypeFinder>(typeFinder);
+            Singleton<ITypeFinder>.Instance = typeFinder;
 
             //find dependency registrars provided by other assemblies
             var dependencyRegistrars = typeFinder.FindClassesOfType<IDependencyRegistrar>();
@@ -122,7 +123,7 @@ namespace Nop.Core.Infrastructure
                 return assembly;
 
             //get assembly from TypeFinder
-            var tf = Resolve<ITypeFinder>();            
+            var tf = Singleton<ITypeFinder>.Instance;            
             assembly = tf?.GetAssemblies().FirstOrDefault(a => a.FullName == args.Name);
             return assembly;
         }
@@ -170,7 +171,7 @@ namespace Nop.Core.Infrastructure
             ServiceProvider = application.ApplicationServices;
 
             //find startup configurations provided by other assemblies
-            var typeFinder = Resolve<ITypeFinder>();
+            var typeFinder = Singleton<ITypeFinder>.Instance;
             var startupConfigurations = typeFinder.FindClassesOfType<INopStartup>();
 
             //create and sort instances of startup configurations
