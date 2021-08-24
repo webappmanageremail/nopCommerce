@@ -482,7 +482,7 @@ namespace Nop.Tests
             _serviceProvider.GetService<IInstallationService>().InstallSampleDataAsync(NopTestsDefaults.AdminEmail).Wait();
 
             var provider = (IPermissionProvider)Activator.CreateInstance(typeof(StandardPermissionProvider));
-            EngineContext.Current.Resolve<IPermissionService>().InstallPermissionsAsync(provider).Wait();
+            _serviceProvider.GetService<IPermissionService>().InstallPermissionsAsync(provider).Wait();
         }
 
         public static T GetService<T>()
