@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
@@ -328,6 +330,9 @@ namespace Nop.Web.Framework
             var customer = await GetCurrentCustomerAsync();
             var store = await _storeContext.GetCurrentStoreAsync();
             await _genericAttributeService.SaveAttributeAsync(customer, NopCustomerDefaults.LanguageIdAttribute, language?.Id ?? 0, store.Id);
+
+            CultureInfo.CurrentCulture = new CultureInfo(language.LanguageCulture);
+            CultureInfo.CurrentUICulture = new CultureInfo(language.LanguageCulture);
 
             //then reset the cached value
             _cachedLanguage = null;
