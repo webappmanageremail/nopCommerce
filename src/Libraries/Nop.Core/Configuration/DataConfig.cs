@@ -1,9 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using FluentMigrator.Runner.Initialization;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace Nop.Core.Configuration
 {
-    public partial class DataConfig : IConfig
+    public partial class DataConfig : IConfig, IConnectionStringAccessor
     {
         /// <summary>
         /// Gets or sets a connection string

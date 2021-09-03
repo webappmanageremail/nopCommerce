@@ -12,6 +12,7 @@ using Nop.Core.Configuration;
 using Nop.Core.Infrastructure;
 using Nop.Data;
 using Nop.Services.Common;
+using Nop.Services.Configuration;
 using Nop.Services.Installation;
 using Nop.Services.Plugins;
 using Nop.Services.Security;
@@ -177,11 +178,13 @@ namespace Nop.Web.Controllers
                 if (string.IsNullOrEmpty(connectionString))
                     throw new Exception(_locService.GetResource("ConnectionStringWrongFormat"));
 
-                await DataSettingsManager.SaveSettingsAsync(new DataConfig
+                _appSettings.DataConfig = new DataConfig
                 {
                     DataProvider = model.DataProvider,
                     ConnectionString = connectionString
-                }, _fileProvider);
+                };
+
+                await AppSettingsHelper.SaveAppSettingsAsync(_appSettings, _fileProvider);
 
                 await DataSettingsManager.LoadSettingsAsync(reloadSettings: true);
 
@@ -293,7 +296,8 @@ namespace Nop.Web.Controllers
                 await staticCacheManager.ClearAsync();
 
                 //clear provider settings if something got wrong
-                await DataSettingsManager.SaveSettingsAsync(new DataConfig(), _fileProvider);
+                _appSettings.DataConfig = new DataConfig();
+                await AppSettingsHelper.SaveAppSettingsAsync(_appSettings, _fileProvider);
 
                 ModelState.AddModelError(string.Empty, string.Format(_locService.GetResource("SetupFailed"), exception.Message));
             }
