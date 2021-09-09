@@ -26,6 +26,7 @@ using Nop.Services.ExportImport;
 using Nop.Services.Forums;
 using Nop.Services.Gdpr;
 using Nop.Services.Helpers;
+using Nop.Services.Html;
 using Nop.Services.Installation;
 using Nop.Services.Localization;
 using Nop.Services.Logging;
@@ -213,6 +214,8 @@ namespace Nop.Web.Framework.Infrastructure
             services.AddScoped<IReviewTypeService, ReviewTypeService>();
             services.AddSingleton<IEventPublisher, EventPublisher>();
             services.AddScoped<ISettingService, SettingService>();
+            services.AddScoped<IBBCodeHelper, BBCodeHelper>();
+            services.AddScoped<IHtmlHelper, HtmlHelper>();
 
             //plugin managers
             services.AddScoped(typeof(IPluginManager<>), typeof(PluginManager<>));

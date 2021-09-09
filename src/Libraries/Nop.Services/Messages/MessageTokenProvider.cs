@@ -27,7 +27,6 @@ using Nop.Core.Domain.Stores;
 using Nop.Core.Domain.Tax;
 using Nop.Core.Domain.Vendors;
 using Nop.Core.Events;
-using Nop.Core.Html;
 using Nop.Core.Infrastructure;
 using Nop.Services.Blogs;
 using Nop.Services.Catalog;
@@ -36,6 +35,7 @@ using Nop.Services.Customers;
 using Nop.Services.Directory;
 using Nop.Services.Forums;
 using Nop.Services.Helpers;
+using Nop.Services.Html;
 using Nop.Services.Localization;
 using Nop.Services.News;
 using Nop.Services.Orders;
@@ -68,6 +68,7 @@ namespace Nop.Services.Messages
         private readonly IEventPublisher _eventPublisher;
         private readonly IGenericAttributeService _genericAttributeService;
         private readonly IGiftCardService _giftCardService;
+        private readonly IHtmlHelper _htmlHelper;
         private readonly ILanguageService _languageService;
         private readonly ILocalizationService _localizationService;
         private readonly INewsService _newsService;
@@ -110,6 +111,7 @@ namespace Nop.Services.Messages
             IEventPublisher eventPublisher,
             IGenericAttributeService genericAttributeService,
             IGiftCardService giftCardService,
+            IHtmlHelper htmlHelper,
             ILanguageService languageService,
             ILocalizationService localizationService,
             INewsService newsService,
@@ -146,6 +148,7 @@ namespace Nop.Services.Messages
             _eventPublisher = eventPublisher;
             _genericAttributeService = genericAttributeService;
             _giftCardService = giftCardService;
+            _htmlHelper = htmlHelper;
             _languageService = languageService;
             _localizationService = localizationService;
             _newsService = newsService;
@@ -1139,8 +1142,8 @@ namespace Nop.Services.Messages
             tokens.Add(new Token("ReturnRequest.Product.Name", await _localizationService.GetLocalizedAsync(product, x => x.Name, languageId)));
             tokens.Add(new Token("ReturnRequest.Reason", returnRequest.ReasonForReturn));
             tokens.Add(new Token("ReturnRequest.RequestedAction", returnRequest.RequestedAction));
-            tokens.Add(new Token("ReturnRequest.CustomerComment", HtmlHelper.FormatText(returnRequest.CustomerComments, false, true, false, false, false, false), true));
-            tokens.Add(new Token("ReturnRequest.StaffNotes", HtmlHelper.FormatText(returnRequest.StaffNotes, false, true, false, false, false, false), true));
+            tokens.Add(new Token("ReturnRequest.CustomerComment", _htmlHelper.FormatText(returnRequest.CustomerComments, false, true, false, false, false, false), true));
+            tokens.Add(new Token("ReturnRequest.StaffNotes", _htmlHelper.FormatText(returnRequest.StaffNotes, false, true, false, false, false, false), true));
             tokens.Add(new Token("ReturnRequest.Status", await _localizationService.GetLocalizedEnumAsync(returnRequest.ReturnRequestStatus, languageId)));
 
             //event notification
@@ -1163,7 +1166,7 @@ namespace Nop.Services.Messages
             tokens.Add(new Token("GiftCard.CouponCode", giftCard.GiftCardCouponCode));
 
             var giftCardMessage = !string.IsNullOrWhiteSpace(giftCard.Message) ?
-                HtmlHelper.FormatText(giftCard.Message, false, true, false, false, false, false) : string.Empty;
+                _htmlHelper.FormatText(giftCard.Message, false, true, false, false, false, false) : string.Empty;
 
             tokens.Add(new Token("GiftCard.Message", giftCardMessage, true));
 
