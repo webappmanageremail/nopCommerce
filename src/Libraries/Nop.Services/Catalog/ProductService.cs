@@ -11,7 +11,6 @@ using Nop.Core.Domain.Discounts;
 using Nop.Core.Domain.Localization;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Shipping;
-using Nop.Core.Infrastructure;
 using Nop.Data;
 using Nop.Services.Customers;
 using Nop.Services.Localization;
@@ -62,6 +61,7 @@ namespace Nop.Services.Catalog
         protected readonly IStoreMappingService _storeMappingService;
         protected readonly IStoreService _storeService;
         protected readonly IWorkContext _workContext;
+        protected readonly IWorkflowMessageService _workflowMessageService;
         protected readonly LocalizationSettings _localizationSettings;
 
         #endregion
@@ -100,6 +100,7 @@ namespace Nop.Services.Catalog
             IStaticCacheManager staticCacheManager,
             IStoreService storeService,
             IStoreMappingService storeMappingService,
+            IWorkflowMessageService workflowMessageService,
             IWorkContext workContext,
             LocalizationSettings localizationSettings)
         {
@@ -136,6 +137,7 @@ namespace Nop.Services.Catalog
             _storeMappingService = storeMappingService;
             _storeService = storeService;
             _workContext = workContext;
+            _workflowMessageService = workflowMessageService;
             _localizationSettings = localizationSettings;
         }
 
@@ -1683,11 +1685,8 @@ namespace Nop.Services.Catalog
                 await ApplyLowStockActivityAsync(product, totalStock);
 
                 //send email notification
-                if (quantityToChange < 0 && totalStock < product.NotifyAdminForQuantityBelow)
-                {
-                    var workflowMessageService = EngineContext.Current.Resolve<IWorkflowMessageService>();
-                    await workflowMessageService.SendQuantityBelowStoreOwnerNotificationAsync(product, _localizationSettings.DefaultAdminLanguageId);
-                }
+                if (quantityToChange < 0 && totalStock < product.NotifyAdminForQuantityBelow) 
+                    await _workflowMessageService.SendQuantityBelowStoreOwnerNotificationAsync(product, _localizationSettings.DefaultAdminLanguageId);
             }
 
             if (product.ManageInventoryMethod == ManageInventoryMethod.ManageStockByAttributes)
@@ -1711,11 +1710,8 @@ namespace Nop.Services.Catalog
                     }
 
                     //send email notification
-                    if (quantityToChange < 0 && combination.StockQuantity < combination.NotifyAdminForQuantityBelow)
-                    {
-                        var workflowMessageService = EngineContext.Current.Resolve<IWorkflowMessageService>();
-                        await workflowMessageService.SendQuantityBelowStoreOwnerNotificationAsync(combination, _localizationSettings.DefaultAdminLanguageId);
-                    }
+                    if (quantityToChange < 0 && combination.StockQuantity < combination.NotifyAdminForQuantityBelow) 
+                        await _workflowMessageService.SendQuantityBelowStoreOwnerNotificationAsync(combination, product, _localizationSettings.DefaultAdminLanguageId);
                 }
             }
 

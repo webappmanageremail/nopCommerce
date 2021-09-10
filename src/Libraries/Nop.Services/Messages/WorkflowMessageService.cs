@@ -15,7 +15,6 @@ using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Shipping;
 using Nop.Core.Domain.Vendors;
 using Nop.Core.Events;
-using Nop.Data.Extensions;
 using Nop.Services.Affiliates;
 using Nop.Services.Catalog;
 using Nop.Services.Common;
@@ -45,7 +44,6 @@ namespace Nop.Services.Messages
         private readonly IMessageTemplateService _messageTemplateService;
         private readonly IMessageTokenProvider _messageTokenProvider;
         private readonly IOrderService _orderService;
-        private readonly IProductService _productService;
         private readonly IQueuedEmailService _queuedEmailService;
         private readonly IStoreContext _storeContext;
         private readonly IStoreService _storeService;
@@ -67,7 +65,6 @@ namespace Nop.Services.Messages
             IMessageTemplateService messageTemplateService,
             IMessageTokenProvider messageTokenProvider,
             IOrderService orderService,
-            IProductService productService,
             IQueuedEmailService queuedEmailService,
             IStoreContext storeContext,
             IStoreService storeService,
@@ -85,7 +82,6 @@ namespace Nop.Services.Messages
             _messageTemplateService = messageTemplateService;
             _messageTokenProvider = messageTokenProvider;
             _orderService = orderService;
-            _productService = productService;
             _queuedEmailService = queuedEmailService;
             _storeContext = storeContext;
             _storeService = storeService;
@@ -2065,12 +2061,14 @@ namespace Nop.Services.Messages
         /// Sends a "quantity below" notification to a store owner
         /// </summary>
         /// <param name="combination">Attribute combination</param>
+        /// <param name="product">Product</param>
         /// <param name="languageId">Message language identifier</param>
         /// <returns>
         /// A task that represents the asynchronous operation
         /// The task result contains the queued email identifier
         /// </returns>
-        public virtual async Task<IList<int>> SendQuantityBelowStoreOwnerNotificationAsync(ProductAttributeCombination combination, int languageId)
+        public virtual async Task<IList<int>> SendQuantityBelowStoreOwnerNotificationAsync(
+            ProductAttributeCombination combination, Product product, int languageId)
         {
             if (combination == null)
                 throw new ArgumentNullException(nameof(combination));
@@ -2083,8 +2081,7 @@ namespace Nop.Services.Messages
                 return new List<int>();
 
             var commonTokens = new List<Token>();
-            var product = await _productService.GetProductByIdAsync(combination.ProductId);
-
+            
             await _messageTokenProvider.AddProductTokensAsync(commonTokens, product, languageId);
             await _messageTokenProvider.AddAttributeCombinationTokensAsync(commonTokens, combination, languageId);
 
