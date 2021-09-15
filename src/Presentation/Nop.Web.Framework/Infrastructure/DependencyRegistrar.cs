@@ -50,6 +50,7 @@ using Nop.Services.Tax;
 using Nop.Services.Themes;
 using Nop.Services.Topics;
 using Nop.Services.Vendors;
+using Nop.Web.Framework.Menu;
 using Nop.Web.Framework.Mvc.Routing;
 using Nop.Web.Framework.Themes;
 using Nop.Web.Framework.UI;
@@ -279,6 +280,9 @@ namespace Nop.Web.Framework.Infrastructure
                     return isMatch;
                 }, typeof(IConsumer<>)))
                     services.AddScoped(findInterface, consumer);
+
+            //XML sitemap
+            services.AddScoped<IXmlSiteMap, XmlSiteMap>();
         }
 
         /// <summary>
