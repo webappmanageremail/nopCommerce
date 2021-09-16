@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
@@ -49,8 +50,8 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
 
         public static void StartEngine(this IApplicationBuilder application)
         {
-            var engine = EngineContext.Current;
-
+            var serviceProvider = application.ApplicationServices;
+            
             //further actions are performed only when the database is installed
             if (DataSettingsManager.IsDatabaseInstalled())
             {
@@ -59,15 +60,15 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
                 Services.Tasks.TaskManager.Instance.Start();
 
                 //log application start
-                engine.Resolve<ILogger>().InformationAsync("Application started").Wait();
+                serviceProvider.GetService<ILogger>().InformationAsync("Application started").Wait();
 
                 //install and update plugins
-                var pluginService = engine.Resolve<IPluginService>();
+                var pluginService = serviceProvider.GetService<IPluginService>();
                 pluginService.InstallPluginsAsync().Wait();
                 pluginService.UpdatePluginsAsync().Wait();
 
                 //update nopCommerce core and db
-                var migrationManager = engine.Resolve<IMigrationManager>();
+                var migrationManager = serviceProvider.GetService<IMigrationManager>();
                 var assembly = Assembly.GetAssembly(typeof(ApplicationBuilderExtensions));
                 migrationManager.ApplyUpMigrations(assembly, true);
                 assembly = Assembly.GetAssembly(typeof(IMigrationManager));
@@ -75,7 +76,7 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
 
 #if DEBUG
                 //prevent save the update migrations into the DB during the developing process  
-                var versions = EngineContext.Current.Resolve<IRepository<MigrationVersionInfo>>();
+                var versions = serviceProvider.GetService<IRepository<MigrationVersionInfo>>();
                 versions.DeleteAsync(mvi => mvi.Description.StartsWith(string.Format(NopMigrationDefaults.UpdateMigrationDescriptionPrefix, NopVersion.FULL_VERSION)));
 #endif
             }
@@ -87,8 +88,10 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
         /// <param name="application">Builder for configuring an application's request pipeline</param>
         public static void UseNopExceptionHandler(this IApplicationBuilder application)
         {
-            var appSettings = EngineContext.Current.Resolve<AppSettings>();
-            var webHostEnvironment = EngineContext.Current.Resolve<IWebHostEnvironment>();
+            var serviceProvider = application.ApplicationServices;
+
+            var appSettings = serviceProvider.GetService<AppSettings>();
+            var webHostEnvironment = serviceProvider.GetService<IWebHostEnvironment>();
             var useDetailedExceptionPage = appSettings.CommonConfig.DisplayFullErrorStack || webHostEnvironment.IsDevelopment();
             if (useDetailedExceptionPage)
             {
@@ -116,10 +119,10 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
                         if (await DataSettingsManager.IsDatabaseInstalledAsync())
                         {
                             //get current customer
-                            var currentCustomer = await EngineContext.Current.Resolve<IWorkContext>().GetCurrentCustomerAsync();
+                            var currentCustomer = await serviceProvider.GetService<IWorkContext>().GetCurrentCustomerAsync();
 
                             //log error
-                            await EngineContext.Current.Resolve<ILogger>().ErrorAsync(exception.Message, exception, currentCustomer);
+                            await serviceProvider.GetService<ILogger>().ErrorAsync(exception.Message, exception, currentCustomer);
                         }
                     }
                     finally
@@ -139,10 +142,11 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
         {
             application.UseStatusCodePages(async context =>
             {
+                var serviceProvider = context.HttpContext.RequestServices;
                 //handle 404 Not Found
                 if (context.HttpContext.Response.StatusCode == StatusCodes.Status404NotFound)
                 {
-                    var webHelper = EngineContext.Current.Resolve<IWebHelper>();
+                    var webHelper = serviceProvider.GetService<IWebHelper>();
                     if (!webHelper.IsStaticResource())
                     {
                         //get original path and query
@@ -151,12 +155,12 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
 
                         if (await DataSettingsManager.IsDatabaseInstalledAsync())
                         {
-                            var commonSettings = EngineContext.Current.Resolve<CommonSettings>();
+                            var commonSettings = serviceProvider.GetService<CommonSettings>();
 
                             if (commonSettings.Log404Errors)
                             {
-                                var logger = EngineContext.Current.Resolve<ILogger>();
-                                var workContext = EngineContext.Current.Resolve<IWorkContext>();
+                                var logger = serviceProvider.GetService<ILogger>();
+                                var workContext = serviceProvider.GetService<IWorkContext>();
 
                                 await logger.ErrorAsync($"Error 404. The requested page ({originalPath}) was not found",
                                     customer: await workContext.GetCurrentCustomerAsync());
@@ -189,11 +193,13 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
         {
             application.UseStatusCodePages(async context =>
             {
-                //handle 404 (Bad request)
+                var serviceProvider = context.HttpContext.RequestServices;
+
+                //handle 400 (Bad request)
                 if (context.HttpContext.Response.StatusCode == StatusCodes.Status400BadRequest)
                 {
-                    var logger = EngineContext.Current.Resolve<ILogger>();
-                    var workContext = EngineContext.Current.Resolve<IWorkContext>();
+                    var logger = serviceProvider.GetService<ILogger>();
+                    var workContext = serviceProvider.GetService<IWorkContext>();
                     await logger.ErrorAsync("Error 400. Bad request", null, customer: await workContext.GetCurrentCustomerAsync());
                 }
             });
@@ -209,7 +215,7 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
                 return;
             
             //whether to use compression (gzip by default)
-            if (EngineContext.Current.Resolve<CommonSettings>().UseResponseCompression)
+            if (application.ApplicationServices.GetService<CommonSettings>().UseResponseCompression)
                 application.UseResponseCompression();
         }
 
@@ -219,8 +225,10 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
         /// <param name="application">Builder for configuring an application's request pipeline</param>
         public static void UseNopStaticFiles(this IApplicationBuilder application)
         {
-            var fileProvider = EngineContext.Current.Resolve<INopFileProvider>();
-            var appSettings = EngineContext.Current.Resolve<AppSettings>();
+            var serviceProvider = application.ApplicationServices;
+
+            var fileProvider = serviceProvider.GetService<INopFileProvider>();
+            var appSettings = Singleton<AppSettings>.Instance;
 
             void staticFileResponse(StaticFileResponseContext context)
             {
@@ -353,7 +361,7 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
                     return;
 
                 //prepare supported cultures
-                var cultures = (await EngineContext.Current.Resolve<ILanguageService>().GetAllLanguagesAsync())
+                var cultures = (await application.ApplicationServices.GetService<ILanguageService>().GetAllLanguagesAsync())
                     .OrderBy(language => language.DisplayOrder)
                     .Select(language => new CultureInfo(language.LanguageCulture)).ToList();
                 options.SupportedCultures = cultures;
@@ -373,7 +381,7 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
             application.UseEndpoints(endpoints =>
             {
                 //register all routes
-                EngineContext.Current.Resolve<IRoutePublisher>().RegisterRoutes(endpoints);
+                application.ApplicationServices.GetService<IRoutePublisher>().RegisterRoutes(endpoints);
             });
         }
 
@@ -383,7 +391,7 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
         /// <param name="application">Builder for configuring an application's request pipeline</param>
         public static void UseNopProxy(this IApplicationBuilder application)
         {
-            var appSettings = EngineContext.Current.Resolve<AppSettings>();
+            var appSettings = Singleton<AppSettings>.Instance;
 
             if (appSettings.HostingConfig.UseProxy)
             {
