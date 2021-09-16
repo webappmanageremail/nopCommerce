@@ -526,7 +526,7 @@ namespace Nop.Services.Discounts
             if (discount.DiscountType == DiscountType.AssignedToOrderSubTotal ||
                 discount.DiscountType == DiscountType.AssignedToOrderTotal)
             {
-                //TODO: try to move into constructor
+                //do not inject IShoppingCartService via constructor because it'll cause circular references
                 var shoppingCartService = EngineContext.Current.Resolve<IShoppingCartService>();
                 var cart = await shoppingCartService.GetShoppingCartAsync(customer,
                     ShoppingCartType.ShoppingCart, storeId: (await _storeContext.GetCurrentStoreAsync()).Id);
