@@ -510,13 +510,12 @@ namespace Nop.Services.Messages
         /// Sends a "quantity below" notification to a store owner
         /// </summary>
         /// <param name="combination">Attribute combination</param>
-        /// <param name="product">Product</param>
         /// <param name="languageId">Message language identifier</param>
         /// <returns>
         /// A task that represents the asynchronous operation
         /// The task result contains the queued email identifier
         /// </returns>
-        Task<IList<int>> SendQuantityBelowStoreOwnerNotificationAsync(ProductAttributeCombination combination, Product product, int languageId);
+        Task<IList<int>> SendQuantityBelowStoreOwnerNotificationAsync(ProductAttributeCombination combination, int languageId);
 
         /// <summary>
         /// Sends a "new VAT submitted" notification to a store owner
