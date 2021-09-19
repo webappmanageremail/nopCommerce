@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using Newtonsoft.Json;
 using Nop.Core;
 using Nop.Core.Configuration;
 using Nop.Core.Infrastructure;
+using Nop.Data.Configuration;
 
 namespace Nop.Data
 {
@@ -14,21 +16,18 @@ namespace Nop.Data
     /// </summary>
     public partial class DataSettingsManager
     {
-        #region Fields
-
-        private static bool? _databaseIsInstalled;
-
-        #endregion
-
-        #region Utils
+        #region Utilities
 
         /// <summary>
-        /// Gets data settings from the old txt file
+        /// Gets data settings from the old txt file (Settings.txt)
         /// </summary>
         /// <param name="data">Old txt file data</param>
         /// <returns>Data settings</returns>
         protected static DataConfig LoadDataSettingsFromOldTxtFile(string data)
         {
+            if (string.IsNullOrEmpty(data))
+                return null;
+
             var dataSettings = new DataConfig();
             using var reader = new StringReader(data);
             string settingsLine;
@@ -61,6 +60,28 @@ namespace Nop.Data
             return dataSettings;
         }
 
+        /// <summary>
+        /// Gets data settings from the old json file (dataSettings.json)
+        /// </summary>
+        /// <param name="data">Old json file data</param>
+        /// <returns>Data settings</returns>
+        protected static DataConfig LoadDataSettingsFromOldJsonFile(string data)
+        {
+            if (string.IsNullOrEmpty(data))
+                return null;
+
+            var jsonDataSettings = JsonConvert.DeserializeAnonymousType(data,
+                new { DataConnectionString = "", DataProvider = DataProviderType.SqlServer, SQLCommandTimeout = "" });
+            var dataSettings = new DataConfig
+            {
+                ConnectionString = jsonDataSettings.DataConnectionString,
+                DataProvider = jsonDataSettings.DataProvider,
+                SQLCommandTimeout = int.TryParse(jsonDataSettings.SQLCommandTimeout, out var result) ? result : null
+            };
+
+            return dataSettings;
+        }
+
         #endregion
 
         #region Methods
@@ -68,195 +89,69 @@ namespace Nop.Data
         /// <summary>
         /// Load data settings
         /// </summary>
-        /// <param name="reloadSettings">Whether to reload data, if they already loaded</param>
-        /// <param name="fileProvider">File provider</param>
-        /// <returns>
+        /// <param name="fileProvider">File provider</param>        /// <returns>
         /// A task that represents the asynchronous operation
         /// The task result contains the data settings
         /// </returns>
-        public static async Task<DataConfig> LoadSettingsAsync(bool reloadSettings = false, INopFileProvider fileProvider = null)
+        public static async Task<DataConfig> LoadSettingsAsync(INopFileProvider fileProvider = null)
         {
-            if (!reloadSettings && Singleton<DataConfig>.Instance != null)
+            if (Singleton<DataConfig>.Instance is not null)
                 return Singleton<DataConfig>.Instance;
 
+            //backward compatibility
             fileProvider ??= CommonHelper.DefaultFileProvider;
             var filePath_json = fileProvider.MapPath(NopDataSettingsDefaults.FilePath);
             var filePath_txt = fileProvider.MapPath(NopDataSettingsDefaults.ObsoleteFilePath);
-
-            var filePath = filePath_json;
-
             if (fileProvider.FileExists(filePath_json) || fileProvider.FileExists(filePath_txt))
             {
-                var dataSettingsObj = new DataConfig();
-                //check whether file exists (JSON)
-                if (fileProvider.FileExists(filePath_json))
-                {
-                    var text = await fileProvider.ReadAllTextAsync(filePath_json, Encoding.UTF8);
-                    if (string.IsNullOrEmpty(text))
-                        return dataSettingsObj;
+                var dataSettings = fileProvider.FileExists(filePath_json)
+                    ? LoadDataSettingsFromOldJsonFile(await fileProvider.ReadAllTextAsync(filePath_json, Encoding.UTF8))
+                    : LoadDataSettingsFromOldTxtFile(await fileProvider.ReadAllTextAsync(filePath_txt, Encoding.UTF8))
+                    ?? new DataConfig();
 
-                    //get data settings from the JSON file
-                    var objDefinition = new { DataConnectionString = "", DataProvider = DataProviderType.SqlServer, SQLCommandTimeout = "" };
-                    var jsonDataSettings = JsonConvert.DeserializeAnonymousType(text, objDefinition);
-                    dataSettingsObj = new DataConfig
-                    {
-                        ConnectionString = jsonDataSettings.DataConnectionString,
-                        DataProvider = jsonDataSettings.DataProvider,
-                        SQLCommandTimeout = int.TryParse(jsonDataSettings.SQLCommandTimeout, out var result) ? result : null
-                    };
-                }
-                else
-                {
-                    if (fileProvider.FileExists(filePath_txt))
-                    {
-                        dataSettingsObj = LoadDataSettingsFromOldTxtFile(fileProvider.ReadAllText(filePath_txt, Encoding.UTF8));
-                        filePath = filePath_txt;
-                    }
-                }
-                //save data settings to the new file
-                await SaveSettingsAsync(dataSettingsObj, fileProvider);
+                AppSettingsHelper.SaveAppSettings(new List<IConfig> { dataSettings }, fileProvider);
+                fileProvider.DeleteFile(filePath_json);
+                fileProvider.DeleteFile(filePath_txt);
 
-                //and delete the old one
-                fileProvider.DeleteFile(filePath);
-
-                Singleton<DataConfig>.Instance = dataSettingsObj;
-                return Singleton<DataConfig>.Instance;
+                Singleton<DataConfig>.Instance = dataSettings;
             }
+            else
+                Singleton<DataConfig>.Instance = Singleton<AppSettings>.Instance.Get<DataConfig>();
 
-            return Singleton<AppSettings>.Instance.DataConfig;
+            return Singleton<DataConfig>.Instance;
         }
 
         /// <summary>
         /// Load data settings
         /// </summary>
-        /// <param name="reloadSettings">Whether to reload data, if they already loaded</param>
         /// <param name="fileProvider">File provider</param>
         /// <returns>Data settings</returns>
-        public static DataConfig LoadSettings(bool reloadSettings = false, INopFileProvider fileProvider = null)
+        public static DataConfig LoadSettings(INopFileProvider fileProvider = null)
         {
-            if (!reloadSettings && Singleton<DataConfig>.Instance != null)
+            if (Singleton<DataConfig>.Instance is not null)
                 return Singleton<DataConfig>.Instance;
 
+            //backward compatibility
             fileProvider ??= CommonHelper.DefaultFileProvider;
             var filePath_json = fileProvider.MapPath(NopDataSettingsDefaults.FilePath);
             var filePath_txt = fileProvider.MapPath(NopDataSettingsDefaults.ObsoleteFilePath);
-
-            var filePath = filePath_json;
-
             if (fileProvider.FileExists(filePath_json) || fileProvider.FileExists(filePath_txt))
             {
-                var dataSettingsObj = new DataConfig();
-                //check whether file exists (JSON)
-                if (fileProvider.FileExists(filePath_json))
-                {
-                    var text = fileProvider.ReadAllText(filePath_json, Encoding.UTF8);
-                    if (string.IsNullOrEmpty(text))
-                        return dataSettingsObj;
+                var dataSettings = fileProvider.FileExists(filePath_json)
+                    ? LoadDataSettingsFromOldJsonFile(fileProvider.ReadAllText(filePath_json, Encoding.UTF8))
+                    : LoadDataSettingsFromOldTxtFile(fileProvider.ReadAllText(filePath_txt, Encoding.UTF8))
+                    ?? new DataConfig();
 
-                    //get data settings from the JSON file
-                    var objDefinition = new { DataConnectionString = "", DataProvider = DataProviderType.SqlServer, SQLCommandTimeout = "" };
-                    var jsonDataSettings = JsonConvert.DeserializeAnonymousType(text, objDefinition);
-                    dataSettingsObj = new DataConfig
-                    {
-                        ConnectionString = jsonDataSettings.DataConnectionString,
-                        DataProvider = jsonDataSettings.DataProvider,
-                        SQLCommandTimeout = int.TryParse(jsonDataSettings.SQLCommandTimeout, out var result) ? result : null
-                    };
-                }
-                else
-                {
-                    if (fileProvider.FileExists(filePath_txt))
-                    {
-                        dataSettingsObj = LoadDataSettingsFromOldTxtFile(fileProvider.ReadAllText(filePath_txt, Encoding.UTF8));
-                        filePath = filePath_txt;
-                    }
-                }
-                //save data settings to the new file
-                SaveSettings(dataSettingsObj, fileProvider);
+                AppSettingsHelper.SaveAppSettings(new List<IConfig> { dataSettings }, fileProvider);
+                fileProvider.DeleteFile(filePath_json);
+                fileProvider.DeleteFile(filePath_txt);
 
-                //and delete the old one
-                fileProvider.DeleteFile(filePath);
-
-                Singleton<DataConfig>.Instance = dataSettingsObj;
-                return Singleton<DataConfig>.Instance;
+                Singleton<DataConfig>.Instance = dataSettings;
             }
+            else
+                Singleton<DataConfig>.Instance = Singleton<AppSettings>.Instance.Get<DataConfig>();
 
-            return Singleton<AppSettings>.Instance.DataConfig;
-        }
-
-        /// <summary>
-        /// Save data settings to the file
-        /// </summary>
-        /// <param name="settings">Data settings</param>
-        /// <param name="fileProvider">File provider</param>
-        /// <returns>A task that represents the asynchronous operation</returns>
-        public static async Task SaveSettingsAsync(DataConfig settings, INopFileProvider fileProvider = null)
-        {
-            Singleton<DataConfig>.Instance = settings ?? throw new ArgumentNullException(nameof(settings));
-
-            fileProvider ??= CommonHelper.DefaultFileProvider;
-            var filePath = fileProvider.MapPath(NopDataSettingsDefaults.AppSettingsFilePath);
-
-            var appSettings = Singleton<AppSettings>.Instance;
-            appSettings.DataConfig = new DataConfig
-            {
-                ConnectionString = settings.ConnectionString,
-                DataProvider = settings.DataProvider,
-                SQLCommandTimeout = settings.SQLCommandTimeout
-            };
-
-            //create file if not exists
-            if (!fileProvider.FileExists(filePath))
-                fileProvider.CreateFile(filePath);
-
-            //check additional configuration parameters
-            var additionalData = JsonConvert.DeserializeObject<AppSettings>(await fileProvider.ReadAllTextAsync(filePath, Encoding.UTF8))?.AdditionalData;
-            appSettings.AdditionalData = additionalData;
-
-            //save data app settings to the file
-            var text = JsonConvert.SerializeObject(appSettings, Formatting.Indented);
-            fileProvider.WriteAllText(filePath, text, Encoding.UTF8);
-        }
-
-        /// <summary>
-        /// Save data settings to the file
-        /// </summary>
-        /// <param name="settings">Data settings</param>
-        /// <param name="fileProvider">File provider</param>
-        public static void SaveSettings(DataConfig settings, INopFileProvider fileProvider = null)
-        {
-            Singleton<DataConfig>.Instance = settings ?? throw new ArgumentNullException(nameof(settings));
-
-            fileProvider ??= CommonHelper.DefaultFileProvider;
-            var filePath = fileProvider.MapPath(NopDataSettingsDefaults.AppSettingsFilePath);
-
-            var appSettings = Singleton<AppSettings>.Instance;
-            appSettings.DataConfig = new DataConfig
-            {
-                ConnectionString = settings.ConnectionString,
-                DataProvider = settings.DataProvider,
-                SQLCommandTimeout = settings.SQLCommandTimeout
-            };
-
-            //create file if not exists
-            if (!fileProvider.FileExists(filePath))
-                fileProvider.CreateFile(filePath);
-
-            //check additional configuration parameters
-            var additionalData = JsonConvert.DeserializeObject<AppSettings>(fileProvider.ReadAllText(filePath, Encoding.UTF8))?.AdditionalData;
-            appSettings.AdditionalData = additionalData;
-
-            //save data app settings to the file
-            var text = JsonConvert.SerializeObject(appSettings, Formatting.Indented);
-            fileProvider.WriteAllText(filePath, text, Encoding.UTF8);
-        }
-
-        /// <summary>
-        /// Reset "database is installed" cached information
-        /// </summary>
-        public static void ResetCache()
-        {
-            _databaseIsInstalled = null;
+            return Singleton<DataConfig>.Instance;
         }
 
         /// <summary>
@@ -265,9 +160,7 @@ namespace Nop.Data
         /// <returns>A task that represents the asynchronous operation</returns>
         public static async Task<bool> IsDatabaseInstalledAsync()
         {
-            _databaseIsInstalled ??= !string.IsNullOrEmpty((await LoadSettingsAsync(reloadSettings: true))?.ConnectionString);
-
-            return _databaseIsInstalled.Value;
+            return !string.IsNullOrEmpty((await LoadSettingsAsync())?.ConnectionString);
         }
 
         /// <summary>
@@ -275,9 +168,7 @@ namespace Nop.Data
         /// </summary>
         public static bool IsDatabaseInstalled()
         {
-            _databaseIsInstalled ??= !string.IsNullOrEmpty(LoadSettings(reloadSettings: true)?.ConnectionString);
-
-            return _databaseIsInstalled.Value;
+            return !string.IsNullOrEmpty(LoadSettings()?.ConnectionString);
         }
 
         /// <summary>

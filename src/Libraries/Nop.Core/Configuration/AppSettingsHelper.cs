@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Nop.Core;
-using Nop.Core.Configuration;
 using Nop.Core.Infrastructure;
 
-namespace Nop.Services.Configuration
+namespace Nop.Core.Configuration
 {
     /// <summary>
     /// Represents the app settings helper
@@ -28,7 +27,8 @@ namespace Nop.Services.Configuration
                 throw new ArgumentNullException(nameof(configurations));
 
             //create app settings
-            var appSettings = new AppSettings(configurations);
+            var appSettings = Singleton<AppSettings>.Instance ?? new AppSettings();
+            appSettings.Update(configurations);
             Singleton<AppSettings>.Instance = appSettings;
 
             //create file if not exists
@@ -44,7 +44,14 @@ namespace Nop.Services.Configuration
             {
                 configuration[config.Name] = JToken.FromObject(config);
             }
-            appSettings.Configuration = configuration;
+
+            //sort configurations for display by order (e.g. data configuration with 0 will be the first)
+            appSettings.Configuration = configuration
+                .SelectMany(outConfig => configurations.Where(inConfig => inConfig.Name == outConfig.Key).DefaultIfEmpty(),
+                    (outConfig, inConfig) => new { OutConfig = outConfig, InConfig = inConfig })
+                .OrderBy(config => config.InConfig?.GetOrder() ?? int.MaxValue)
+                .Select(config => config.OutConfig)
+                .ToDictionary(config => config.Key, config => config.Value);
 
             //save app settings to the file
             var text = JsonConvert.SerializeObject(appSettings, Formatting.Indented);
