@@ -207,7 +207,8 @@ namespace Nop.Web.Areas.Admin.Infrastructure.Mapper
             CreateMap<CommonConfig, CommonConfigModel>();
             CreateMap<CommonConfigModel, CommonConfig>();
 
-            CreateMap<DataConfig, DataConfigModel>();
+            CreateMap<DataConfig, DataConfigModel>()
+                .ForMember(model => model.DataProviderTypeValues, options => options.Ignore());
             CreateMap<DataConfigModel, DataConfig>();
         }
 

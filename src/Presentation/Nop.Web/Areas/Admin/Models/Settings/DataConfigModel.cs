@@ -1,4 +1,5 @@
-﻿using Nop.Web.Framework.Models;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Nop.Web.Framework.Models;
 using Nop.Web.Framework.Mvc.ModelBinding;
 
 namespace Nop.Web.Areas.Admin.Models.Settings
@@ -11,10 +12,11 @@ namespace Nop.Web.Areas.Admin.Models.Settings
         public string ConnectionString { get; set; }
 
         [NopResourceDisplayName("Admin.Configuration.AppSettings.Data.DataProvider")]
-        public string DataProvider { get; set; }
+        public int DataProvider { get; set; }
+        public SelectList DataProviderTypeValues { get; set; }
 
         [NopResourceDisplayName("Admin.Configuration.AppSettings.Data.SQLCommandTimeout")]
-        public string SQLCommandTimeout { get; set; }
+        public int SQLCommandTimeout { get; set; }
 
         #endregion
     }

@@ -16836,6 +16836,18 @@
   <LocaleResource Name="Enums.Nop.Core.Domain.Tax.VatNumberStatus.Valid">
     <Value>Valid</Value>
   </LocaleResource>
+  <LocaleResource Name="Enums.Nop.Data.DataProviderType.Unknown">
+    <Value>Unknown</Value>
+  </LocaleResource>
+  <LocaleResource Name="Enums.Nop.Data.DataProviderType.SqlServer">
+    <Value>Microsoft SQL Server</Value>
+  </LocaleResource>
+  <LocaleResource Name="Enums.Nop.Data.DataProviderType.MySql">
+    <Value>MySQL</Value>
+  </LocaleResource>
+  <LocaleResource Name="Enums.Nop.Data.DataProviderType.PostgreSQL">
+    <Value>PostgreSQL</Value>
+  </LocaleResource>
   <LocaleResource Name="Enums.Nop.Services.Orders.GroupByOptions.Day">
     <Value>Day</Value>
   </LocaleResource>

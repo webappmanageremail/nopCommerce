@@ -792,6 +792,8 @@ namespace Nop.Web.Areas.Admin.Factories
 
             model.DistributedCacheConfigModel.DistributedCacheTypeValues = await _appSettings.Get<DistributedCacheConfig>().DistributedCacheType.ToSelectListAsync();
 
+            model.DataConfigModel.DataProviderTypeValues = await _appSettings.Get<DataConfig>().DataProvider.ToSelectListAsync();
+
             model.EnvironmentVariables.AddRange(from property in model.GetType().GetProperties()
                                                 where property.Name != nameof(AppSettingsModel.EnvironmentVariables)
                                                 from pp in property.PropertyType.GetProperties()
