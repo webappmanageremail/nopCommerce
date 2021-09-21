@@ -16,7 +16,7 @@ namespace Nop.Web.Areas.Admin.Models.Settings
         public SelectList DataProviderTypeValues { get; set; }
 
         [NopResourceDisplayName("Admin.Configuration.AppSettings.Data.SQLCommandTimeout")]
-        public int SQLCommandTimeout { get; set; }
+        public int? SQLCommandTimeout { get; set; }
 
         #endregion
     }
