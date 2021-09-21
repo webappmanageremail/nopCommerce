@@ -16,6 +16,15 @@ namespace Nop.Data
     /// </summary>
     public partial class DataSettingsManager
     {
+        #region Fields
+
+        /// <summary>
+        /// Gets a cached value indicating whether the database is installed. We need this value invariable during installation process
+        /// </summary>
+        private static bool? _databaseIsInstalled;
+
+        #endregion
+
         #region Utilities
 
         /// <summary>
@@ -89,7 +98,8 @@ namespace Nop.Data
         /// <summary>
         /// Load data settings
         /// </summary>
-        /// <param name="fileProvider">File provider</param>        /// <returns>
+        /// <param name="fileProvider">File provider</param>
+        /// <returns>
         /// A task that represents the asynchronous operation
         /// The task result contains the data settings
         /// </returns>
@@ -160,7 +170,9 @@ namespace Nop.Data
         /// <returns>A task that represents the asynchronous operation</returns>
         public static async Task<bool> IsDatabaseInstalledAsync()
         {
-            return !string.IsNullOrEmpty((await LoadSettingsAsync())?.ConnectionString);
+            _databaseIsInstalled ??= !string.IsNullOrEmpty((await LoadSettingsAsync())?.ConnectionString);
+
+            return _databaseIsInstalled.Value;
         }
 
         /// <summary>
@@ -168,7 +180,9 @@ namespace Nop.Data
         /// </summary>
         public static bool IsDatabaseInstalled()
         {
-            return !string.IsNullOrEmpty(LoadSettings()?.ConnectionString);
+            _databaseIsInstalled ??= !string.IsNullOrEmpty(LoadSettings()?.ConnectionString);
+
+            return _databaseIsInstalled.Value;
         }
 
         /// <summary>
