@@ -21,13 +21,13 @@ namespace Nop.Core
     /// </summary>
     public partial class WebHelper : IWebHelper
     {
-        #region Fields 
+        #region Fields  
 
         private readonly IActionContextAccessor _actionContextAccessor;
         private readonly IHostApplicationLifetime _hostApplicationLifetime;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUrlHelperFactory _urlHelperFactory;
-        private readonly IStoreContext _storeContext;
+        private readonly Lazy<IStoreContext> _storeContext;
 
         #endregion
 
@@ -37,7 +37,7 @@ namespace Nop.Core
             IHostApplicationLifetime hostApplicationLifetime,
             IHttpContextAccessor httpContextAccessor,
             IUrlHelperFactory urlHelperFactory,
-            IStoreContext storeContext)
+            Lazy<IStoreContext> storeContext)
         {
             _actionContextAccessor = actionContextAccessor;
             _hostApplicationLifetime = hostApplicationLifetime;
@@ -203,7 +203,7 @@ namespace Nop.Core
 
             //if host is empty (it is possible only when HttpContext is not available), use URL of a store entity configured in admin area
             if (string.IsNullOrEmpty(storeHost))
-                storeLocation = _storeContext.GetCurrentStore()?.Url
+                storeLocation = _storeContext.Value.GetCurrentStore()?.Url
                                 ?? throw new Exception("Current store cannot be loaded");
 
             //ensure that URL is ended with slash
