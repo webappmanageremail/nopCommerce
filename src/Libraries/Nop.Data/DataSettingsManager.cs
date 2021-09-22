@@ -119,10 +119,10 @@ namespace Nop.Data
                     : LoadDataSettingsFromOldTxtFile(await fileProvider.ReadAllTextAsync(filePath_txt, Encoding.UTF8))
                     ?? new DataConfig();
 
-                AppSettingsHelper.SaveAppSettings(new List<IConfig> { dataSettings }, fileProvider);
                 fileProvider.DeleteFile(filePath_json);
                 fileProvider.DeleteFile(filePath_txt);
 
+                SaveSettings(dataSettings, fileProvider);
                 Singleton<DataConfig>.Instance = dataSettings;
             }
             else
@@ -152,16 +152,27 @@ namespace Nop.Data
                     : LoadDataSettingsFromOldTxtFile(fileProvider.ReadAllText(filePath_txt, Encoding.UTF8))
                     ?? new DataConfig();
 
-                AppSettingsHelper.SaveAppSettings(new List<IConfig> { dataSettings }, fileProvider);
                 fileProvider.DeleteFile(filePath_json);
                 fileProvider.DeleteFile(filePath_txt);
 
+                SaveSettings(dataSettings, fileProvider);
                 Singleton<DataConfig>.Instance = dataSettings;
             }
             else
                 Singleton<DataConfig>.Instance = Singleton<AppSettings>.Instance.Get<DataConfig>();
 
             return Singleton<DataConfig>.Instance;
+        }
+
+        /// <summary>
+        /// Save data settings
+        /// </summary>
+        /// <param name="dataSettings">Data settings</param>
+        /// <param name="fileProvider">File provider</param>
+        public static void SaveSettings(DataConfig dataSettings, INopFileProvider fileProvider)
+        {
+            Singleton<DataConfig>.Instance = null;
+            AppSettingsHelper.SaveAppSettings(new List<IConfig> { dataSettings }, fileProvider);
         }
 
         /// <summary>

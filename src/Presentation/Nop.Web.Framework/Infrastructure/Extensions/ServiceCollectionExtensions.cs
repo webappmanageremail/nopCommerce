@@ -77,7 +77,7 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
             {
                 configuration.GetSection(config.Name).Bind(config, options => options.BindNonPublicProperties = true);
             }
-            var appSettings = AppSettingsHelper.SaveAppSettings(configurations);
+            var appSettings = AppSettingsHelper.SaveAppSettings(configurations, CommonHelper.DefaultFileProvider, false);
             services.AddSingleton(appSettings);
 
             //create engine and configure service provider

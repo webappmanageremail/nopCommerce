@@ -178,13 +178,11 @@ namespace Nop.Web.Controllers
                 if (string.IsNullOrEmpty(connectionString))
                     throw new Exception(_locService.GetResource("ConnectionStringWrongFormat"));
 
-                var dataSettings = new DataConfig
+                DataSettingsManager.SaveSettings(new DataConfig
                 {
                     DataProvider = model.DataProvider,
                     ConnectionString = connectionString
-                };
-                Singleton<DataConfig>.Instance = null;
-                AppSettingsHelper.SaveAppSettings(new List<IConfig> { dataSettings }, _fileProvider);
+                }, _fileProvider);
 
                 if (model.CreateDatabaseIfNotExists)
                 {
@@ -291,8 +289,7 @@ namespace Nop.Web.Controllers
                 await staticCacheManager.ClearAsync();
 
                 //clear provider settings if something got wrong
-                Singleton<DataConfig>.Instance = null;
-                AppSettingsHelper.SaveAppSettings(new List<IConfig> { new DataConfig() }, _fileProvider);
+                DataSettingsManager.SaveSettings(new DataConfig(), _fileProvider);
 
                 ModelState.AddModelError(string.Empty, string.Format(_locService.GetResource("SetupFailed"), exception.Message));
             }

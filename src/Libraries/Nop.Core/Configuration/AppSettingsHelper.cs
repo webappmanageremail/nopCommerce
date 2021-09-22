@@ -20,8 +20,9 @@ namespace Nop.Core.Configuration
         /// </summary>
         /// <param name="configurations">Configurations to save</param>
         /// <param name="fileProvider">File provider</param>
+        /// <param name="overwrite">Whether to overwrite appsettings file</param>
         /// <returns>App settings</returns>
-        public static AppSettings SaveAppSettings(IList<IConfig> configurations, INopFileProvider fileProvider = null)
+        public static AppSettings SaveAppSettings(IList<IConfig> configurations, INopFileProvider fileProvider, bool overwrite = true)
         {
             if (configurations is null)
                 throw new ArgumentNullException(nameof(configurations));
@@ -32,8 +33,8 @@ namespace Nop.Core.Configuration
             Singleton<AppSettings>.Instance = appSettings;
 
             //create file if not exists
-            fileProvider ??= CommonHelper.DefaultFileProvider;
             var filePath = fileProvider.MapPath(NopConfigurationDefaults.AppSettingsFilePath);
+            var fileExists = fileProvider.FileExists(filePath);
             fileProvider.CreateFile(filePath);
 
             //get raw configuration parameters
@@ -54,8 +55,11 @@ namespace Nop.Core.Configuration
                 .ToDictionary(config => config.Key, config => config.Value);
 
             //save app settings to the file
-            var text = JsonConvert.SerializeObject(appSettings, Formatting.Indented);
-            fileProvider.WriteAllText(filePath, text, Encoding.UTF8);
+            if (!fileExists || overwrite)
+            {
+                var text = JsonConvert.SerializeObject(appSettings, Formatting.Indented);
+                fileProvider.WriteAllText(filePath, text, Encoding.UTF8);
+            }
 
             return appSettings;
         }
