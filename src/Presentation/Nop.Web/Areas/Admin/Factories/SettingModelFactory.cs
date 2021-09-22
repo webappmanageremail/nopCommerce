@@ -794,10 +794,12 @@ namespace Nop.Web.Areas.Admin.Factories
 
             model.DataConfigModel.DataProviderTypeValues = await _appSettings.Get<DataConfig>().DataProvider.ToSelectListAsync();
 
+            //Since we decided to use the naming of the DB connections section as in the .net core - "ConnectionStrings",
+            //we are forced to adjust our internal model naming to this convention in this check.
             model.EnvironmentVariables.AddRange(from property in model.GetType().GetProperties()
                                                 where property.Name != nameof(AppSettingsModel.EnvironmentVariables)
                                                 from pp in property.PropertyType.GetProperties()
-                                                where Environment.GetEnvironmentVariables().Contains($"{property.Name.Replace("Model", "")}__{pp.Name}")
+                                                where Environment.GetEnvironmentVariables().Contains($"{property.Name.Replace("Model", "").Replace("DataConfig", "ConnectionStrings")}__{pp.Name}")
                                                 select $"{property.Name}_{pp.Name}");
             return model;
         }
