@@ -7,6 +7,7 @@
 @inject LocalizationSettings localizationSettings
 @inject StoreInformationSettings storeInformationSettings
 @inject INopFileProvider fileProvider;
+@inject IWorkContext workContext;
 @inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment WebHostEnvironment
 @inject Nop.Services.Localization.ILanguageService languageService
 @using System.Globalization
@@ -24,7 +25,7 @@
     //Kendo UI
     var kendoVersion = "2020.1.406";
 
-    var currentKendoCulture = (await EngineContext.Current.Resolve<IWorkContext>().GetWorkingLanguageAsync()).LanguageCulture;
+    var currentKendoCulture = (await workContext.GetWorkingLanguageAsync()).LanguageCulture;
 
     var currentCulture = CultureInfo.CurrentCulture;
 
